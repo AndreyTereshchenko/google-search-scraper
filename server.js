@@ -12,16 +12,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/search', async (req, res) => {
     const query = req.query.query;
     if (!query) {
-        return res.status(400).send({ error: 'Требуется параметр запроса' });
+        return res.status(400).send({ error: 'Query parameter is required' });
     }
 
     try {
-        console.log(`Запрос на поиск: ${query}`);
         const results = await scrapeGoogleSearch(query);
-        res.json({ results });
+        if (!results) {
+            return res.status(500).send({ error: 'No results found from Google' });
+        }
+        res.json(results);
     } catch (error) {
-        console.error('Ошибка при обработке запроса /search:', error);
-        res.status(500).send({ error: 'Ошибка при обработке запроса поиска. Пожалуйста, попробуйте позже.' });
+        console.error('Error scraping Google:', error);
+        res.status(500).send({ error: 'Failed to scrape Google search results' });
     }
 });
 
