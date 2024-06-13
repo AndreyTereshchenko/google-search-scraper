@@ -19,8 +19,8 @@ app.get('/search', async (req, res) => {
         const results = await scrapeGoogleSearch(query);
         res.json({ results });
     } catch (error) {
-        console.error('Ошибка парсинга результатов поиска Google:', error);
-        res.status(500).send({ error: 'Не удалось получить результаты поиска Google' });
+        console.error('Ошибка парсинга результатов поиска Google:', error.message);
+        res.status(500).send({ error: 'Ошибка парсинга результатов поиска Google. Пожалуйста, попробуйте позже.' });
     }
 });
 
@@ -28,29 +28,36 @@ app.get('/search', async (req, res) => {
 async function scrapeGoogleSearch(query) {
     const browser = await puppeteer.launch({ headless: true }); // Запуск Puppeteer в headless-режиме
     const page = await browser.newPage();
-    await page.goto(`https://www.google.com/search?q=${encodeURIComponent(query)}`, { waitUntil: 'networkidle2' });
 
-    const results = await page.evaluate(() => {
-        const scrapedResults = [];
-        document.querySelectorAll('.tF2Cxc').forEach(item => {
-            const titleElement = item.querySelector('h3');
-            const urlElement = item.querySelector('a');
-            const descriptionElement = item.querySelector('.r025kc');
+    try {
+        await page.goto(`https://www.google.com/search?q=${encodeURIComponent(query)}`, { waitUntil: 'networkidle2' });
 
-            if (titleElement && urlElement) {
-                const result = {
-                    title: titleElement.innerText.trim(),
-                    url: urlElement.href,
-                    description: descriptionElement ? descriptionElement.innerText.trim() : ''
-                };
-                scrapedResults.push(result);
-            }
+        const results = await page.evaluate(() => {
+            const scrapedResults = [];
+            document.querySelectorAll('.tF2Cxc').forEach(item => {
+                const titleElement = item.querySelector('h3');
+                const urlElement = item.querySelector('a');
+                const descriptionElement = item.querySelector('.r025kc');
+
+                if (titleElement && urlElement) {
+                    const result = {
+                        title: titleElement.innerText.trim(),
+                        url: urlElement.href,
+                        description: descriptionElement ? descriptionElement.innerText.trim() : ''
+                    };
+                    scrapedResults.push(result);
+                }
+            });
+            return scrapedResults;
         });
-        return scrapedResults;
-    });
 
-    await browser.close();
-    return results;
+        await browser.close();
+        return results;
+    } catch (error) {
+        throw new Error('Не удалось выполнить парсинг результатов поиска Google. Пожалуйста, попробуйте позже.');
+    } finally {
+        await browser.close();
+    }
 }
 
 // Сервирование index.html для корневого пути
