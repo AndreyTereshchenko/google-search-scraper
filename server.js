@@ -25,7 +25,6 @@ app.get('/search', async (req, res) => {
     }
 });
 
-// Функция для парсинга результатов поиска Google
 async function scrapeGoogleSearch(query) {
     let browser;
     try {
