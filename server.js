@@ -16,20 +16,22 @@ app.get('/search', async (req, res) => {
     }
 
     try {
+        console.log(`Запрос на поиск: ${query}`);
         const results = await scrapeGoogleSearch(query);
         res.json({ results });
     } catch (error) {
-        console.error('Ошибка парсинга результатов поиска Google:', error.message);
-        res.status(500).send({ error: 'Ошибка парсинга результатов поиска Google. Пожалуйста, попробуйте позже.' });
+        console.error('Ошибка при обработке запроса /search:', error);
+        res.status(500).send({ error: 'Ошибка при обработке запроса поиска. Пожалуйста, попробуйте позже.' });
     }
 });
 
 // Функция для парсинга результатов поиска Google
 async function scrapeGoogleSearch(query) {
-    const browser = await puppeteer.launch({ headless: true }); // Запуск Puppeteer в headless-режиме
-    const page = await browser.newPage();
-
+    let browser;
     try {
+        browser = await puppeteer.launch({ headless: true });
+        const page = await browser.newPage();
+
         await page.goto(`https://www.google.com/search?q=${encodeURIComponent(query)}`, { waitUntil: 'networkidle2' });
 
         const results = await page.evaluate(() => {
@@ -51,12 +53,15 @@ async function scrapeGoogleSearch(query) {
             return scrapedResults;
         });
 
+        console.log(`Найдено результатов: ${results.length}`);
         await browser.close();
         return results;
     } catch (error) {
+        console.error('Ошибка при парсинге результатов поиска:', error);
+        if (browser) {
+            await browser.close();
+        }
         throw new Error('Не удалось выполнить парсинг результатов поиска Google. Пожалуйста, попробуйте позже.');
-    } finally {
-        await browser.close();
     }
 }
 
