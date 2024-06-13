@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Search Scraper</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Google Search Scraper</h1>
+        <form id="searchForm">
+            <label for="query">Enter search term:</label>
+            <input type="text" id="query" name="query" required>
+            <button type="submit">Search</button>
+        </form>
+
+        <div id="results"></div>
+        <button id="download">Download</button>
+
+        <script>
+            document.getElementById('searchForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const query = document.getElementById('query').value;
+                const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                const resultsDiv = document.getElementById('results');
+
+                resultsDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2).replace(/^"/, '').replace(/"$/, '')}</pre>`;
+
+                document.getElementById('download').onclick = () => {
+                    let textContent = '';
+                
+                    
+                    const tempContainer = document.createElement('div');
+                    tempContainer.innerHTML = data;
+                
+                    
+                    const results = tempContainer.querySelectorAll('.result');
+                    results.forEach((result, index) => {
+                        const title = result.querySelector('.title').innerText;
+                        const url = result.querySelector('.url').href;
+                        const description = result.querySelector('.description').innerText;
+                        textContent += `Result ${index + 1}:\nTitle: ${title}\nURL: ${url}\nDescription: ${description}\n\n`;
+                    });
+                
+               
+                    const blob = new Blob([textContent], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'search_results.txt';
+                    a.click();
+                    URL.revokeObjectURL(url);                                  
+                };
+            });
+        </script>
+</div>
+</body>
+</html>
+
+
