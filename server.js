@@ -53,7 +53,7 @@ async function scrapeGoogleSearch(query) {
             return scrapedResults;
         });
 
-        console.log(`Найдено результатов: ${results.length}`);
+        console.log(`Найденоj результатов: ${results.length}`);
         await browser.close();
         return results;
     } catch (error) {
