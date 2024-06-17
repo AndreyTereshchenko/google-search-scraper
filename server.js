@@ -4,9 +4,6 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
 
 // Сервирование статических файлов из папки 'public'
 app.use(express.static(path.join(__dirname, 'public')));
@@ -15,21 +12,20 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/search', async (req, res) => {
     const query = req.query.query;
     if (!query) {
-        return res.status(400).send({ error: 'Query parameter is required' });
+        return res.status(400).send({ error: 'Требуется параметр запроса' });
     }
 
     try {
+        console.log(`Запрос на поиск: ${query}`);
         const results = await scrapeGoogleSearch(query);
-        if (!results) {
-            return res.status(500).send({ error: 'No results found from Google' });
-        }
-        res.json(results);
+        res.json({ results });
     } catch (error) {
-        console.error('Error scraping Google:', error);
-        res.status(500).send({ error: 'Failed to scrape Google search results' });
+        console.error('Ошибка при обработке запроса /search:', error);
+        res.status(500).send({ error: 'Ошибка при обработке запроса поиска. Пожалуйста, попробуйте позже.' });
     }
 });
 
+// Функция для парсинга результатов поиска Google
 async function scrapeGoogleSearch(query) {
     let browser;
     try {

@@ -22,9 +22,11 @@ body {
     box-sizing: content-box;
     max-width: 80%;
     display: flex;
+    flex-direction: column;
     justify-content: center;
+    gap: 20px;
 }
 #download{
-    margin-bottom: 20px;
+    margin: 20px 0;
 }
     

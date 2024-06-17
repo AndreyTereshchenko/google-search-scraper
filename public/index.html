@@ -23,40 +23,59 @@
                 e.preventDefault();
                 const query = document.getElementById('query').value;
                 const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
-                const data = await response.json();
+                const data = await response.json(); // Получаем JSON данные
+                
                 const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = ''; // Очищаем содержимое перед отображением новых результатов
 
-                resultsDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2).replace(/^"/, '').replace(/"$/, '')}</pre>`;
+                // Проверяем, есть ли результаты
+                if (data.results && data.results.length > 0) {
+                    data.results.forEach((result, index) => {
+                        const resultElement = document.createElement('div');
+                        resultElement.classList.add('result');
+                        
+                        const titleElement = document.createElement('div');
+                        titleElement.classList.add('title');
+                        titleElement.textContent = `Title: ${result.title}`;
+                        
+                        const urlElement = document.createElement('div');
+                        urlElement.classList.add('url');
+                        urlElement.textContent = `URL: ${result.url}`;
+                        
+                        const descriptionElement = document.createElement('div');
+                        descriptionElement.classList.add('description');
+                        descriptionElement.textContent = `Description: ${result.description}`;
+                        
+                        resultElement.appendChild(titleElement);
+                        resultElement.appendChild(urlElement);
+                        resultElement.appendChild(descriptionElement);
+                        
+                        resultsDiv.appendChild(resultElement);
+                    });
+                } else {
+                    resultsDiv.innerHTML = '<p>No results found</p>';
+                }
 
+                // Обработка скачивания результатов
                 document.getElementById('download').onclick = () => {
                     let textContent = '';
-                
-                    
-                    const tempContainer = document.createElement('div');
-                    tempContainer.innerHTML = data;
-                
-                    
-                    const results = tempContainer.querySelectorAll('.result');
-                    results.forEach((result, index) => {
-                        const title = result.querySelector('.title').innerText;
-                        const url = result.querySelector('.url').href;
-                        const description = result.querySelector('.description').innerText;
-                        textContent += `Result ${index + 1}:\nTitle: ${title}\nURL: ${url}\nDescription: ${description}\n\n`;
+
+                    // Формируем текстовое содержимое для скачивания
+                    data.results.forEach((result, index) => {
+                        textContent += `Result ${index + 1}:\nTitle: ${result.title}\nURL: ${result.url}\nDescription: ${result.description}\n\n`;
                     });
-                
-               
+
+                    // Создаем и скачиваем текстовый файл
                     const blob = new Blob([textContent], { type: 'text/plain' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
                     a.download = 'search_results.txt';
                     a.click();
-                    URL.revokeObjectURL(url);                                  
+                    URL.revokeObjectURL(url);
                 };
             });
         </script>
-</div>
+    </div>
 </body>
 </html>
-
-
