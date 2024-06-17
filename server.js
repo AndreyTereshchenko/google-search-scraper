@@ -1,5 +1,6 @@
 const express = require('express');
 const puppeteer = require('puppeteer');
+
 const path = require('path');
 
 const app = express();
@@ -53,7 +54,7 @@ async function scrapeGoogleSearch(query) {
             return scrapedResults;
         });
 
-        console.log(`Найденоj результатов: ${results.length}`);
+        console.log(`Найдено результатов: ${results.length}`);
         await browser.close();
         return results;
     } catch (error) {
@@ -61,7 +62,8 @@ async function scrapeGoogleSearch(query) {
         if (browser) {
             await browser.close();
         }
-        throw new Error('Не удалось выполнить парсинг результатов поиска Google. Пожалуйста, попробуйте позже.');
+        // Возвращаем пустой массив в случае ошибки
+        return [];
     }
 }
 
