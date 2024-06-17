@@ -3,46 +3,6 @@ const puppeteer = require('puppeteer');
 const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
-async function run() {
-    let browser;
-    try {
-      browser = await puppeteer.launch({
-        executablePath: process.env.GOOGLE_CHROME_BIN,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-      });
-      const page = await browser.newPage();
-      await page.goto('https://example.com');
-      // Далее ваши действия с Puppeteer
-    } catch (error) {
-      console.error('Ошибка при запуске браузера:', error);
-    } finally {
-      if (browser) {
-        await browser.close();
-      }
-    }
-  }
-  
-  run();
-
-// Сервирование статических файлов из папки 'public'
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Эндпоинт для парсинга результатов поиска Google
-app.get('/search', async (req, res) => {
-    const query = req.query.query;
-    if (!query) {
-        return res.status(400).send({ error: 'Требуется параметр запроса' });
-    }
-
-    try {
-        console.log(`Запрос на поиск: ${query}`);
-        const results = await scrapeGoogleSearch(query);
-        res.json({ results });
-    } catch (error) {
-        console.error('Ошибка при обработке запроса /search:', error);
-        res.status(500).send({ error: 'Ошибка при обработке запроса поиска. Пожалуйста, попробуйте позже.' });
-    }
-});
 
 // Функция для парсинга результатов поиска Google
 async function scrapeGoogleSearch(query) {
@@ -58,7 +18,7 @@ async function scrapeGoogleSearch(query) {
             document.querySelectorAll('.tF2Cxc').forEach(item => {
                 const titleElement = item.querySelector('h3');
                 const urlElement = item.querySelector('a');
-                const descriptionElement = item.querySelector('.r025kc');
+                const descriptionElement = item.querySelector('.r25kc');
 
                 if (titleElement && urlElement) {
                     const result = {
@@ -84,6 +44,26 @@ async function scrapeGoogleSearch(query) {
         return [];
     }
 }
+
+// Сервирование статических файлов из папки 'public'
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Эндпоинт для парсинга результатов поиска Google
+app.get('/search', async (req, res) => {
+    const query = req.query.query;
+    if (!query) {
+        return res.status(400).send({ error: 'Требуется параметр запроса' });
+    }
+
+    try {
+        console.log(`Запрос на поиск: ${query}`);
+        const results = await scrapeGoogleSearch(query);
+        res.json({ results }); // Отправляем результаты в формате JSON
+    } catch (error) {
+        console.error('Ошибка при обработке запроса /search:', error);
+        res.status(500).send({ error: 'Ошибка при обработке запроса поиска. Пожалуйста, попробуйте позже.' });
+    }
+});
 
 // Сервирование index.html для корневого пути
 app.get('/', (req, res) => {
