@@ -1,10 +1,28 @@
 const express = require('express');
 const puppeteer = require('puppeteer');
-
 const path = require('path');
-
 const app = express();
 const PORT = process.env.PORT || 3000;
+async function run() {
+    let browser;
+    try {
+      browser = await puppeteer.launch({
+        executablePath: process.env.GOOGLE_CHROME_BIN,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      });
+      const page = await browser.newPage();
+      await page.goto('https://example.com');
+      // Далее ваши действия с Puppeteer
+    } catch (error) {
+      console.error('Ошибка при запуске браузера:', error);
+    } finally {
+      if (browser) {
+        await browser.close();
+      }
+    }
+  }
+  
+  run();
 
 // Сервирование статических файлов из папки 'public'
 app.use(express.static(path.join(__dirname, 'public')));
