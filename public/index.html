@@ -25,14 +25,16 @@
                 try {
                     const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
                     if (!response.ok) {
-                        throw new Error('Ошибка HTTP ' + response.status);
+                        throw new Error('HTTP error ' + response.status);
                     }
                     const data = await response.json();
-                    displayResults(data.results); // Отображаем результаты на странице
-                    console.log('JSON data:', data); // Выводим данные в консоль для проверки
+                    displayResults(data.results);
+
+                    // Выводим JSON в консоль
+                    console.log('JSON data:', data);
                 } catch (error) {
-                    console.error('Ошибка при получении результатов поиска:', error);
-                    displayError('Произошла ошибка при выполнении поискового запроса.');
+                    console.error('Error fetching search results:', error);
+                    displayError('An error occurred while fetching search results.');
                 }
             });
 
@@ -72,27 +74,6 @@
                 const resultsDiv = document.getElementById('results');
                 resultsDiv.innerHTML = `<p>${message}</p>`;
             }
-
-            // Обработка скачивания результатов
-            document.getElementById('download').onclick = () => {
-                let textContent = '';
-
-                // Формируем текстовое содержимое для скачивания
-                // Предполагая, что данные results доступны здесь
-                // (в текущей реализации они не передаются напрямую)
-                // data.results.forEach((result, index) => {
-                //     textContent += `Result ${index + 1}:\nTitle: ${result.title}\nURL: ${result.url}\nDescription: ${result.description}\n\n`;
-                // });
-
-                // Создаем и скачиваем текстовый файл
-                const blob = new Blob([textContent], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'search_results.txt';
-                a.click();
-                URL.revokeObjectURL(url);
-            };
         </script>
     </div>
 </body>
